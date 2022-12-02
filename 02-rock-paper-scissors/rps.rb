@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Solves part 1
+
 def score(round)
   {'X' => 1, 'Y' => 2, 'Z' => 3}[round[1]] +
   case round
