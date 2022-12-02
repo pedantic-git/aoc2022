@@ -17,6 +17,6 @@ scores = {
 }
 
 rounds = $<.readlines.map(&:split)
-total = rounds.inject(0) { |acc, round| acc + scores[round] }
+total = rounds.sum { |round| scores[round] }
 
 p total
