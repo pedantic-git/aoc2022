@@ -21,9 +21,14 @@ end
 drawing, instructions = $<.readlines.chunk {/\S/ =~ _1 ? :text : :_separator}.map(&:last)
 s = stacks(drawing)
 
+# Change this to switch between part 1 soln and part 2 soln
+CRATE_ORDER_PRESERVED = true
+
 instructions.each do
   /move (\d+) from (\d) to (\d)/ =~ _1
-  s[$3.to_i].push(*s[$2.to_i].pop($1.to_i).reverse)
+  to_move = s[$2.to_i].pop($1.to_i)
+  to_move.reverse! unless CRATE_ORDER_PRESERVED
+  s[$3.to_i].push(*to_move)
 end
 
 # And the top crate of each stack is...
