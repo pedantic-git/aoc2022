@@ -20,6 +20,10 @@ module NSLOD
       block.call self
       contents.each {_1.kind_of?(Dir) && _1.each(&block)}
     end
+
+    def <=>(other)
+      size <=> other.size
+    end
   end
 
   File = Struct.new(:name, :size, keyword_init: true)
@@ -28,6 +32,8 @@ module NSLOD
     attr_reader :root, :input
     attr_accessor :pwd
 
+    DISK_SIZE = 70_000_000
+
     # input should be an IO
     def initialize(input)
       @input = input
@@ -35,7 +41,11 @@ module NSLOD
       run!
     end
 
-   def cd(dir)
+    def free_space
+      DISK_SIZE - root.size
+    end
+
+    def cd(dir)
       case dir
       when "/"
         self.pwd = self.root
@@ -43,12 +53,6 @@ module NSLOD
         self.pwd = pwd.parent
       else
         self.pwd = pwd.contents.find {_1.name == dir} || mkdir(dir)
-      end
-    end
-
-    def mkdir(name)
-      Dir.new(name: name, parent: pwd).tap do |dir|
-        pwd.contents.push dir
       end
     end
 
@@ -85,9 +89,24 @@ module NSLOD
     rescue EOFError
       # Done!
     end
+
+    def mkdir(name)
+      Dir.new(name: name, parent: pwd).tap do |dir|
+        pwd.contents.push dir
+      end
+    end
   end
 end
 
 s = NSLOD::Shell.new($<)
+
+# Part 1
 small_dirs = s.root.find_all {|d| d.size <= 100000}
 puts "Total size of small dirs: #{small_dirs.sum(&:size)}"
+
+# Part 2
+puts "Free space is: #{s.free_space}"
+needed_space = 30_000_000 - s.free_space
+puts "So we need to delete: #{needed_space}"
+smallest_dir = s.root.find_all {|d| d.size >= needed_space}.min
+puts "Smallest dir we can delete is #{smallest_dir.name} with a size of #{smallest_dir.size}"
