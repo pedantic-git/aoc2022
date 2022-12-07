@@ -1,14 +1,24 @@
 #!/usr/bin/env ruby
 
-require 'pp'
-require 'stringio'
-
 module NSLOD
 
   Dir = Struct.new(:name, :parent, :contents, keyword_init: true) do
+    include Enumerable
+
     def initialize(*)
       super
       self.contents ||= []
+    end
+
+    # Get the size of this directory, recursively
+    def size
+      @size ||= contents.sum(&:size)
+    end
+
+    # Recursive - directories only (for now)
+    def each(&block)
+      block.call self
+      contents.each {_1.kind_of?(Dir) && _1.each(&block)}
     end
   end
 
@@ -22,24 +32,10 @@ module NSLOD
     def initialize(input)
       @input = input
       @pwd = @root = Dir.new(name: '/')
+      run!
     end
 
-    def run!
-      loop do
-        case cmd = input.readline
-        when /\A\$ cd (\S+)/
-          cd($1)
-        when /\A\$ ls/
-          ls
-        else
-          raise "Unexpected input: #{cmd}"
-        end
-      end
-    rescue EOFError
-      # Done!
-    end
-
-    def cd(dir)
+   def cd(dir)
       case dir
       when "/"
         self.pwd = self.root
@@ -72,35 +68,26 @@ module NSLOD
         end
       end
     end
+
+    private
+
+    def run!
+      loop do
+        case cmd = input.readline
+        when /\A\$ cd (\S+)/
+          cd($1)
+        when /\A\$ ls/
+          ls
+        else
+          raise "Unexpected input: #{cmd}"
+        end
+      end
+    rescue EOFError
+      # Done!
+    end
   end
 end
 
-input = StringIO.new(<<~EOT)
-$ cd /
-$ ls
-dir a
-14848514 b.txt
-8504156 c.dat
-dir d
-$ cd a
-$ ls
-dir e
-29116 f
-2557 g
-62596 h.lst
-$ cd e
-$ ls
-584 i
-$ cd ..
-$ cd ..
-$ cd d
-$ ls
-4060174 j
-8033020 d.log
-5626152 d.ext
-7214296 k
-EOT
-
-s = NSLOD::Shell.new(input)
-s.run!
-pp s.root
+s = NSLOD::Shell.new($<)
+small_dirs = s.root.find_all {|d| d.size <= 100000}
+puts "Total size of small dirs: #{small_dirs.sum(&:size)}"
