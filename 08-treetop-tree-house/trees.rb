@@ -11,16 +11,22 @@ def ends(e, i)
   [left, right]
 end
 
-# Given a tree in trees and an index, return true if that tree is visible from
-# one of the four edges
-def visible?(trees, tree, index)
+# Given a tree in trees and an index, return the trees visible in each of the four
+# directions, in the order north, east, south, west
+def directions(trees, tree, index)
   row_number = index / trees.column_count
   col_number = index % trees.column_count
 
   west, east = ends(trees.row(row_number), col_number)
   north, south = ends(trees.column(col_number), row_number)
 
-  [east,west,south,north].any? {|dir| dir.all? {|other| other < tree}}
+  [north, east, west, south]
+end
+
+# Given a tree in trees and an index, return true if that tree is visible from
+# one of the four edges
+def visible?(trees, tree, index)
+  directions(trees, tree, index).any? {|dir| dir.all? {|other| other < tree}}
 end
 
 trees = Matrix[*$<.readlines.map {_1.chomp.split('').map(&:to_i)}]
