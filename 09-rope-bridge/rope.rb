@@ -1,12 +1,14 @@
 #!/usr/bin/env ruby
 
-class Rope
-  attr_reader :head, :tail, :tail_visits
+N_KNOTS = 2 # Change to 10 for part 2
 
-  def initialize
-    @head = [0,0]
-    @tail = [0,0]
-    @tail_visits = [tail.dup]
+class Rope
+  attr_reader :knots, :tail_visits
+
+  def initialize(n)
+    @knots = Array.new(n) { [0,0] }
+    @tail_visits = []
+    record_tail_position
   end
 
   def instruct!(instruction)
@@ -15,7 +17,7 @@ class Rope
   end
 
   def inspect
-    "Head %-8s Tail %-8s" % [head, tail]
+    knots.inspect
   end
 
   def n_tail_visits
@@ -27,40 +29,51 @@ class Rope
   def move_head(dir)
     case dir
     when 'U'
-      head[1] -= 1
+      knots.first[1] -= 1
     when 'D'
-      head[1] += 1
+      knots.first[1] += 1
     when 'L'
-      head[0] -= 1
+      knots.first[0] -= 1
     when 'R'
-      head[0] += 1
+      knots.first[0] += 1
     end
-    move_tail
+
+    1.upto(knots.length - 1) do |i|
+      move_knot(i)
+    end
   end
 
   # Note: x <=> 0 returns -1 for negative numbers and 1 for positive numbers
-  def move_tail
-    case head_distance
+  def move_knot(i)
+    case distance_to_previous(i)
     in [0, v] if v.abs > 1
-      tail[1] += v <=> 0
+      knots[i][1] += v <=> 0
     in [h, 0] if h.abs > 1
-      tail[0] += h <=> 0
+      knots[i][0] += h <=> 0
     in [h, v] if h.abs > 1 || v.abs > 1
-      tail[0] += h <=> 0
-      tail[1] += v <=> 0
+      knots[i][0] += h <=> 0
+      knots[i][1] += v <=> 0
     else
       # Tail is close enough - don't move it
     end
-    tail_visits.push tail.dup
+    record_tail_position
   end
 
-  def head_distance
-    [head[0]-tail[0], head[1]-tail[1]]
+  def distance_to_previous(i)
+    [
+      knots[i-1][0] - knots[i][0], 
+      knots[i-1][1] - knots[i][1]
+    ]
+  end
+
+  def record_tail_position
+    tail_visits << knots[-1].dup
   end
 
 end
 
-Rope.new.then do |rope|
+
+Rope.new(N_KNOTS).then do |rope|
   while inst = $<.gets
     rope.instruct!(inst)
   end
