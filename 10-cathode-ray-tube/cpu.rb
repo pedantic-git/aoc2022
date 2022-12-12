@@ -1,12 +1,13 @@
 #!/usr/bin/env ruby
 
 class Cpu
-  attr_accessor :cycle, :x, :signal_sum
+  attr_accessor :cycle, :x, :signal_sum, :output
 
   def initialize
     self.cycle = 0
     self.x = 1
     self.signal_sum = 0
+    self.output = ""
   end
 
   def instruct!(instruction)
@@ -30,10 +31,23 @@ class Cpu
   end
 
   def tick!
+    draw_pixel!
     self.cycle += 1
     if (cycle-20)%40 == 0
-      self.signal_sum += signal_strength
+      self.signal_sum += signal_strength # for part 1
     end
+    if cycle%40 == 0
+      newline!
+    end
+  end
+
+  def draw_pixel!
+    lit = (x-1..x+1).include?(cycle%40)
+    self.output += lit ? "#" : '.'
+  end
+
+  def newline!
+    self.output += "\n"
   end
 end
 
@@ -42,4 +56,5 @@ Cpu.new.then do |cpu|
     cpu.instruct! inst
   end
   puts "Signal sum = #{cpu.signal_sum}"
+  puts cpu.output
 end
