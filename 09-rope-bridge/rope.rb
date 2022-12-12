@@ -1,11 +1,12 @@
 #!/usr/bin/env ruby
 
 class Rope
-  attr_reader :head, :tail
+  attr_reader :head, :tail, :tail_visits
 
   def initialize
     @head = [0,0]
     @tail = [0,0]
+    @tail_visits = [tail.dup]
   end
 
   def instruct!(instruction)
@@ -15,6 +16,10 @@ class Rope
 
   def inspect
     "Head %-8s Tail %-8s" % [head, tail]
+  end
+
+  def n_tail_visits
+    tail_visits.uniq.count
   end
 
   private
@@ -31,7 +36,6 @@ class Rope
       head[0] += 1
     end
     move_tail
-    p self
   end
 
   # Note: x <=> 0 returns -1 for negative numbers and 1 for positive numbers
@@ -47,6 +51,7 @@ class Rope
     else
       # Tail is close enough - don't move it
     end
+    tail_visits.push tail.dup
   end
 
   def head_distance
@@ -59,4 +64,5 @@ Rope.new.then do |rope|
   while inst = $<.gets
     rope.instruct!(inst)
   end
+  puts "Tail visited: #{rope.n_tail_visits} locations"
 end
