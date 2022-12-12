@@ -34,7 +34,23 @@ class Rope
     p self
   end
 
+  # Note: x <=> 0 returns -1 for negative numbers and 1 for positive numbers
   def move_tail
+    case head_distance
+    in [0, v] if v.abs > 1
+      tail[1] += v <=> 0
+    in [h, 0] if h.abs > 1
+      tail[0] += h <=> 0
+    in [h, v] if h.abs > 1 || v.abs > 1
+      tail[0] += h <=> 0
+      tail[1] += v <=> 0
+    else
+      # Tail is close enough - don't move it
+    end
+  end
+
+  def head_distance
+    [head[0]-tail[0], head[1]-tail[1]]
   end
 
 end
