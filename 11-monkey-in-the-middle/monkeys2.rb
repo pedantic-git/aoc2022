@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Solves part 2
+
 class Monkey
   attr_reader :monkeys, :items, :operation, :test, :divisor
   attr_accessor :count
@@ -40,7 +42,7 @@ end
 class Monkeys < Array
 
   def run!
-    200.times { round! }
+    10000.times { round! }
   end
 
   def round!
@@ -63,9 +65,6 @@ monkeys = Monkeys.new
 $<.readlines.chunk {|l| l == "\n" ? :_separator : true }.each do |notes|
   monkeys << Monkey.new(monkeys, notes.join)
 end
-
-puts "LCM is #{monkeys.lcm}"
-
 monkeys.run!
 
 puts "Monkey business is: #{monkeys.monkey_business}"
